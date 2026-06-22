@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>FreeMarket</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="container nav-wrap">
+        <a class="brand" href="#">FreeMarket</a>
+        <nav>
+          <a href="#discover">Discover</a>
+          <a href="#how-it-works">How it works</a>
+          <a href="#post">Post</a>
+        </nav>
+        <div class="nav-actions">
+          <a class="button button-secondary" href="login.html" id="accountButton">Login</a>
+          <a class="button button-primary" href="#post">Post an item</a>
+        </div>
+      </div>
+    </header>
+
+    <main>
+      <section class="hero">
+        <div class="container hero-grid">
+          <div>
+            <p class="eyebrow">Community exchange</p>
+            <h1>Give away what you no longer need, trade what you love.</h1>
+            <p class="hero-text">
+              Join a worldwide marketplace built around sharing, swapping, and helping neighbors reuse valuable things.
+            </p>
+            <div class="hero-actions">
+              <a class="button button-primary" href="#discover">Browse listings</a>
+              <a class="button button-secondary" href="#how-it-works">Learn more</a>
+            </div>
+            <ul class="hero-stats">
+              <li><strong>12K+</strong><span>active members</span></li>
+              <li><strong>4.9/5</strong><span>community rating</span></li>
+              <li><strong>1.8M</strong><span>items shared</span></li>
+            </ul>
+          </div>
+          <div class="hero-card">
+            <div class="hero-card-top">
+              <span>Today’s highlights</span>
+              <span class="pill success">Free</span>
+            </div>
+            <div class="hero-card-body">
+              <h3>Wooden desk lamp</h3>
+              <p>Available in Seattle · pickup today</p>
+            </div>
+            <div class="hero-card-footer">
+              <span id="heroPoster">From: community</span>
+              <a href="#discover">Claim now</a>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="discover" id="discover">
+        <div class="container">
+          <div class="section-head">
+            <div>
+              <p class="eyebrow">Discover</p>
+              <h2>Find something useful nearby or across the world</h2>
+            </div>
+            <div class="filters">
+              <input id="searchInput" type="search" placeholder="Search items, categories, or locations" />
+              <select id="categoryFilter">
+                <option value="all">All categories</option>
+                <option value="furniture">Furniture</option>
+                <option value="electronics">Electronics</option>
+                <option value="clothing">Clothing</option>
+                <option value="books">Books</option>
+                <option value="outdoors">Outdoors</option>
+                <option value="home">Home</option>
+              </select>
+            </div>
+          </div>
+          <div id="listingGrid" class="listing-grid"></div>
+          <aside id="advertsSection" class="adverts" style="margin-top:1rem">
+            <h3>Local adverts</h3>
+            <div id="advertsGrid" class="listing-grid"></div>
+          </aside>
+        </div>
+      </section>
+
+      <section class="how-it-works" id="how-it-works">
+        <div class="container">
+          <p class="eyebrow">How it works</p>
+          <h2>Three simple steps to share or receive</h2>
+          <div class="steps-grid">
+            <article>
+              <span>1</span>
+              <h3>Post your item</h3>
+              <p>List what you’re giving away, swapping, or selling for free.</p>
+            </article>
+            <article>
+              <span>2</span>
+              <h3>Connect with the community</h3>
+              <p>Chat with people nearby or around the world to arrange pickup or shipping.</p>
+            </article>
+            <article>
+              <span>3</span>
+              <h3>Give it a new life</h3>
+              <p>Complete the exchange and leave a review so others can trust the process.</p>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="post" id="post">
+        <div class="container post-grid">
+          <div>
+            <p class="eyebrow">Share</p>
+            <h2>Post an item in under a minute</h2>
+            <p>
+              Whether it is a gently used backpack, extra plant pots, or a bike you no longer ride, our community is ready to reuse it.
+            </p>
+          </div>
+          <form class="post-form" id="postForm">
+            <label>
+              Item name
+              <input id="itemName" type="text" placeholder="Example: Coffee table" required />
+            </label>
+            <label>
+              Category
+              <select id="itemCategory">
+                <option value="furniture">Furniture</option>
+                <option value="electronics">Electronics</option>
+                <option value="clothing">Clothing</option>
+                <option value="books">Books</option>
+                <option value="outdoors">Outdoors</option>
+                <option value="home">Home</option>
+              </select>
+            </label>
+            <label>
+              Type
+              <select id="itemType">
+                <option>Giveaway</option>
+                <option>Exchange</option>
+              </select>
+            </label>
+            <label>
+              Location
+              <input id="itemLocation" type="text" placeholder="Example: Seattle, USA" required />
+            </label>
+            <label>
+              Description
+              <textarea id="itemDescription" rows="3" placeholder="Tell people what condition it is in and how to arrange pickup or shipping." required></textarea>
+            </label>
+            <label>
+              Photos
+              <div id="dropZone" class="drop-zone">
+                <p>Drag & drop images here</p>
+                <span>or click to browse</span>
+                <input id="imageInput" type="file" accept="image/*" multiple hidden />
+              </div>
+            </label>
+            <div id="imagePreview" class="image-preview"></div>
+            <button class="button button-primary" type="submit">Publish listing</button>
+          </form>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="container footer-wrap">
+        <p>© 2026 FreeMarket</p>
+        <a href="#">Terms</a>
+        <a href="#">Privacy</a>
+      </div>
+    </footer>
+
+    <script src="script.js"></script>
+  </body>
+</html>

@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Profile · FreeMarket</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="container nav-wrap">
+        <a class="brand" href="index.html">FreeMarket</a>
+        <div class="nav-actions">
+          <a class="button button-secondary" href="index.html">Browse</a>
+          <a class="button button-primary" id="logoutButton" href="#">Logout</a>
+        </div>
+      </div>
+    </header>
+
+    <main class="container" style="padding:2rem 0">
+      <section class="auth-card" style="max-width:900px;">
+        <h1 id="profileName">Profile</h1>
+        <p id="profileContact" class="auth-message"></p>
+
+        <div style="margin-top:1rem">
+          <h2>Your listings</h2>
+          <div id="userListings" class="listing-grid"></div>
+        </div>
+
+        <div style="margin-top:1.2rem">
+          <h2>Your requests</h2>
+          <div id="userRequests"></div>
+        </div>
+
+        <div style="margin-top:1.2rem">
+          <h2>Incoming requests</h2>
+          <div id="incomingRequests"></div>
+        </div>
+      </section>
+    </main>
+
+    <script>
+      const API_BASE = '/api';
+      const USER_KEY = 'freeMarketUser';
+
+      function getStoredUser() {
+        const raw = localStorage.getItem(USER_KEY);
+        if (!raw) return null;
+        try {
+          return JSON.parse(raw);
+        } catch (e) {
+          return { username: raw };
+        }
+      }
+
+      const user = getStoredUser();
+      if (!user) {
+        window.location.href = 'login.html';
+      }
+
+      const profileName = document.getElementById('profileName');
+      const profileContact = document.getElementById('profileContact');
+      const userListingsEl = document.getElementById('userListings');
+      const userRequestsEl = document.getElementById('userRequests');
+      const incomingRequestsEl = document.getElementById('incomingRequests');
+      const logoutButton = document.getElementById('logoutButton');
+
+      profileName.textContent = user.username || 'Profile';
+      profileContact.textContent = user.phone ? `Phone: ${user.phone}` : '';
+
+      logoutButton.addEventListener('click', (e) => {
+        e.preventDefault();
+        localStorage.removeItem(USER_KEY);
+        window.location.href = 'index.html';
+      });
+
+      async function loadData() {
+        try {
+          const [listingsRes, requestsRes] = await Promise.all([
+            fetch(`${API_BASE}/listings`),
+            fetch(`${API_BASE}/requests`)
+          ]);
+
+          const listings = await listingsRes.json();
+          const requests = await requestsRes.json();
+
+          const mine = listings.filter((l) => (l.postedBy || '').toLowerCase() === (user.username || '').toLowerCase());
+          const myRequests = requests.filter((r) => (r.requestedBy || '').toLowerCase() === (user.username || '').toLowerCase());
+          const incoming = requests.filter((r) => {
+            const listing = listings.find((L) => Number(L.id) === Number(r.listingId));
+            return listing && (listing.postedBy || '').toLowerCase() === (user.username || '').toLowerCase();
+          });
+
+          renderListings(mine, userListingsEl);
+          renderRequests(myRequests, userRequestsEl);
+          renderRequests(incoming, incomingRequestsEl);
+        } catch (error) {
+          console.error(error);
+        }
+      }
+
+      function renderListings(items, el) {
+        el.innerHTML = '';
+        if (!items.length) {
+          el.innerHTML = '<p class="auth-message">No listings yet.</p>';
+          return;
+        }
+        items.forEach((item) => {
+          const card = document.createElement('article');
+          card.className = 'listing-card';
+          card.innerHTML = `
+            ${item.imageUrls && item.imageUrls.length ? `<img src="${item.imageUrls[0]}" alt="${item.title}" />` : ''}
+            <small>${item.type}</small>
+            <h3>${item.title}</h3>
+            <p>${item.location}</p>
+            <p>${item.description}</p>
+            <div class="meta"><span>${item.tag}</span><strong>${item.category}</strong></div>
+          `;
+          el.appendChild(card);
+        });
+      }
+
+      function renderRequests(items, el) {
+        el.innerHTML = '';
+        if (!items.length) {
+          el.innerHTML = '<p class="auth-message">No requests.</p>';
+          return;
+        }
+
+        items.forEach((r) => {
+          const row = document.createElement('div');
+          row.style.padding = '0.6rem 0';
+          row.style.borderBottom = '1px solid var(--border)';
+          row.innerHTML = `
+            <strong>${r.requestedBy}</strong> requested <em>${r.listingTitle || r.listingId}</em>
+            <div style="color:var(--muted)">Status: ${r.status}</div>
+          `;
+          el.appendChild(row);
+        });
+      }
+
+      loadData();
+    </script>
+  </body>
+</html>

@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Register · FreeMarket</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="auth-page">
+      <section class="auth-card">
+        <p class="eyebrow">Join the community</p>
+        <h1>Create your account</h1>
+        <p>Sign up to post listings, swap items, and connect with others.</p>
+        <form class="auth-form" id="registerForm">
+          <input type="text" id="fullName" placeholder="Full name" required />
+          <input type="email" id="email" placeholder="Email address" required />
+          <input type="text" id="country" placeholder="Country (e.g. Germany)" required />
+          <input type="tel" id="phone" placeholder="Telephone number" required />
+          <input type="text" id="username" placeholder="Username" required />
+          <input type="password" id="password" placeholder="Password" required />
+          <input type="password" id="confirmPassword" placeholder="Confirm password" required />
+          <button class="button button-primary" type="submit">Create account</button>
+        </form>
+        <p class="auth-message" id="authMessage"></p>
+        <p class="auth-toggle">
+          Already have an account?
+          <a href="#" id="switchMode">Sign in instead</a>
+        </p>
+        <p class="auth-toggle forgot-link">
+          <a href="#" id="forgotPasswordLink">Forgot password?</a>
+        </p>
+      </section>
+    </main>
+
+    <script>
+      const form = document.getElementById('registerForm');
+      const message = document.getElementById('authMessage');
+      const switchMode = document.getElementById('switchMode');
+      const forgotPasswordLink = document.getElementById('forgotPasswordLink');
+      const title = document.querySelector('.auth-card h1');
+      const eyebrow = document.querySelector('.auth-card .eyebrow');
+      const subtitle = document.querySelector('.auth-card > p:nth-of-type(2)');
+      const submitButton = form.querySelector('button');
+      const passwordField = document.getElementById('password');
+      const confirmPasswordField = document.getElementById('confirmPassword');
+      const fullNameField = document.getElementById('fullName');
+      const emailField = document.getElementById('email');
+      const countryField = document.getElementById('country');
+      const phoneField = document.getElementById('phone');
+      const usernameField = document.getElementById('username');
+
+      let isLoginMode = false;
+      let isForgotMode = false;
+
+      function setMode(login, forgot = false) {
+        isLoginMode = login;
+        isForgotMode = forgot;
+        eyebrow.textContent = forgot ? 'Reset access' : login ? 'Welcome back' : 'Join the community';
+        title.textContent = forgot ? 'Forgot your password?' : login ? 'Sign in to FreeMarket' : 'Create your account';
+        subtitle.textContent = forgot
+          ? 'Enter your email and we will send recovery instructions.'
+          : login
+            ? 'Log in to continue sharing and discovering items.'
+            : 'Sign up to post listings, swap items, and connect with others.';
+        submitButton.textContent = forgot ? 'Send reset link' : login ? 'Sign in' : 'Create account';
+
+        fullNameField.style.display = login || forgot ? 'none' : 'block';
+        emailField.style.display = forgot || !login ? 'block' : 'none';
+        countryField.style.display = login || forgot ? 'none' : 'block';
+        phoneField.style.display = login || forgot ? 'none' : 'block';
+        usernameField.style.display = login || !forgot ? 'block' : 'none';
+        passwordField.style.display = !forgot ? 'block' : 'none';
+        confirmPasswordField.style.display = !login && !forgot ? 'block' : 'none';
+        switchMode.style.display = forgot ? 'none' : 'inline';
+        forgotPasswordLink.style.display = login ? 'inline' : 'none';
+      }
+
+      function saveUser(username, phone = '') {
+        const userData = { username, phone, country: countryField ? countryField.value.trim() : '' };
+        localStorage.setItem('freeMarketUser', JSON.stringify(userData));
+      }
+
+      function showMessage(text, isError = false) {
+        message.className = isError ? 'auth-message error' : 'auth-message';
+        message.textContent = text;
+      }
+
+      form.addEventListener('submit', async (event) => {
+        event.preventDefault();
+
+        const username = usernameField.value.trim();
+        const password = passwordField.value;
+        const email = emailField.value.trim();
+        const phone = phoneField.value.trim();
+
+        if (isForgotMode) {
+          if (!email) {
+            showMessage('Please enter your email address.', true);
+            return;
+          }
+          showMessage('Recovery instructions sent to your email.');
+          return;
+        }
+
+        if (isLoginMode) {
+          if (!username || !password) {
+            showMessage('Please enter both username and password.', true);
+            return;
+          }
+
+          try {
+            const response = await fetch('/api/auth/login', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ username, password })
+            });
+            const data = await response.json();
+
+            if (!response.ok) {
+              throw new Error(data.error || 'Login failed');
+            }
+
+            const userData = { username: data.username, phone: data.phone || '', country: data.country || '' };
+            localStorage.setItem('freeMarketUser', JSON.stringify(userData));
+            showMessage('Welcome back! Redirecting...');
+            setTimeout(() => {
+              window.location.href = 'index.html';
+            }, 800);
+          } catch (error) {
+            showMessage(error.message, true);
+          }
+          return;
+        }
+
+        const fullName = fullNameField.value.trim();
+        const confirmPassword = confirmPasswordField.value;
+
+        if (!fullName || !email || !phone || !username || !password || !confirmPassword) {
+          showMessage('Please complete all fields.', true);
+          return;
+        }
+
+        if (password !== confirmPassword) {
+          showMessage('Passwords do not match.', true);
+          return;
+        }
+
+        if (password.length < 6) {
+          showMessage('Password must be at least 6 characters.', true);
+          return;
+        }
+
+        try {
+          const response = await fetch('/api/auth/register', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username, email, phone, password, country: countryField ? countryField.value.trim() : '' })
+          });
+          const data = await response.json();
+
+          if (!response.ok) {
+            throw new Error(data.error || 'Registration failed');
+          }
+
+          // save country returned from server when available
+          const savedCountry = data.country || countryField.value.trim();
+          const userData = { username: data.username, phone: data.phone || phone, country: savedCountry };
+          localStorage.setItem('freeMarketUser', JSON.stringify(userData));
+          showMessage('Account created successfully! Redirecting...');
+          setTimeout(() => {
+            window.location.href = 'index.html';
+          }, 800);
+        } catch (error) {
+          showMessage(error.message, true);
+        }
+      });
+
+      switchMode.addEventListener('click', (event) => {
+        event.preventDefault();
+        setMode(!isLoginMode);
+      });
+
+      forgotPasswordLink.addEventListener('click', (event) => {
+        event.preventDefault();
+        setMode(false, true);
+      });
+
+      setMode(false);
+    </script>
+  </body>
+</html>
